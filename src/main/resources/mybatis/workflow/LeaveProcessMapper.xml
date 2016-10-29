@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.LeaveProcessDao">
+	<select id="getTotal" resultType="java.lang.Integer">
+		select count(*) from wf_leaveprocess where 1=1
+		<if test="condition.name!='unknown'">
+		  and active=${condition.name}
+		</if>
+	</select>
+	<select id="query" resultType="java.util.HashMap">
+		select id,pd_id as pdId,status,date_format(starttime,'%Y-%m-%d %H:%i:%s') as startTime,date_format(endtime,'%Y-%m-%d %H:%i:%s') as endTime,maxactive as maxActive, (select max(name) from
+		globalization where tablename='wf_leaveprocess' and language=#{lang} and tablecolumn='name' and tableid=wf_leaveprocess.id) as
+		titleName,(select max(name) from
+		globalization where tablename='wf_leaveprocess' and language=#{lang} and tablecolumn='desc' and tableid=wf_leaveprocess.id) as
+		'desc',(select max(name) from account where id=wf_leaveprocess.request_id) as requestName,(select  max(d.name)  from v_globalization_dictionary d 
+ where d.language='zh' and  d.mkey='WORKFLOWSTATUS' and d.val= wf_leaveprocess.status) as statusName
+		from
+		wf_leaveprocess where 1=1
+		
+		<if test="condition.name!='unknown'">
+		  and active=${condition.name}
+		</if>
+		limit ${page.startR},${page.endR}
+	</select>
+	
+
+	<insert id="save" parameterType="LeaveProcess" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO wf_leaveprocess (pd_id, maxactive,status,starttime,endtime,request_id,createid,createtime)
+		VALUES
+		(#{pdId}, #{maxActive}, #{status}, #{startTime}, #{endTime}, #{requestId},${createid},sysdate())
+	</insert>
+
+	<update id="update" parameterType="LeaveProcess">
+		UPDATE wf_leaveprocess SET
+		maxactive = ${maxActive}
+		<if test="startTime!=null">
+		  ,starttime = #{startTime}
+		</if>
+		<if test="endTime!=null">
+		,endtime = #{endTime}
+		</if>
+		,updateid=${updateid}
+		,status=${status},
+		updatetime=sysdate()
+		WHERE id = ${id}
+	</update>
+
+    <select id="findEntityById" resultType="LeaveProcess">
+		select * from wf_leaveprocess where id=${id}
+	</select>
+	
+	<delete id="delete">
+		delete from wf_leaveprocess where id=${id}
+	</delete>
+	
+</mapper>

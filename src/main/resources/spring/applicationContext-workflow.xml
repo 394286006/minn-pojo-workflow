@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd      
+	http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	<!-- author minn -->
+ 
+  <context:property-placeholder ignore-unresolvable="true" location="classpath*:/spring/application.workflow.properties" />
+  <context:component-scan base-package="p.minn.workflow.service"/>
+  
+  <bean id="workflowdataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> 
+		<property name="driverClassName" value="${jdbc.workflow.driver}"/> 
+		<property name="url" value="${jdbc.workflow.url}"/> 
+		<property name="username" value="${jdbc.workflow.username}"/> 
+		<property name="password" value="${jdbc.workflow.password}"/> 
+	</bean> 
+
+	<bean id="workflowtransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="workflowdataSource" />
+	</bean>
+	
+    <tx:annotation-driven transaction-manager="workflowtransactionManager"/>
+
+	<!-- define the SqlSessionFactory -->
+	<bean id="workflowSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="workflowdataSource" />
+		<property name="typeAliasesPackage" value="p.minn.workflow.entity" />
+		<property name="mapperLocations" value="classpath:/mybatis/workflow/*Mapper.xml" />
+		
+	</bean>
+
+
+	<!-- scan for mappers and let them be autowired -->
+	<bean id="workflowmapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="p.minn.workflow.repository" />
+		<property name="sqlSessionFactoryBeanName" value="workflowSessionFactory"/>
+	</bean>
+	<!--  -->
+    <aop:config>
+       <aop:pointcut expression="execution(public * p.minn..*.*(..))" id="crudlog"/>
+       <aop:advisor advice-ref="logTableAop" pointcut-ref="crudlog"/>
+    </aop:config>
+    
+ 
+</beans>

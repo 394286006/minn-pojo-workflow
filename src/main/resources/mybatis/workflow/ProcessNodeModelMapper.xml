@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessNodeModelDao">
+
+	<insert id="save" parameterType="ProcessNodeModel" 
+		keyProperty="id">
+		INSERT INTO wf_processnodemodel (id,pid,pn_id,type,deptid)
+		VALUES
+		(#{id},#{pId}, #{pnId},#{type},${deptId})
+	</insert>
+	
+	
+	<delete id="deleteByPnId">
+		delete from wf_processnodemodel where pn_id=${pnId}
+	</delete>
+
+	<select id="queryTree" resultType="java.util.HashMap">
+		select  id ,id as rid,pid as rpid,(select max(name) from globalization where tablename='department' and tablecolumn='name' and tableid=pdm.deptid and language=#{lang} ) as text, pid,type,0 as selected from wf_processnodemodel pdm where pdm.pn_id=${condition.id}
+		union all 
+		select  id,id as rid,pid as rpid,(select max(name) from globalization where tablename='wf_processnode' and tablecolumn='name' and tableid=pn.id and language=#{lang}) as text, pid,'wf_processnode' as type,0 as selected from wf_processnode pn where pn.id=${condition.id}
+		
+	</select>
+	
+	<select id="getModelByPdId" resultType="java.util.HashMap">
+		select concat(pd.pid,'_',pn.id) as pdn_id,pd.pn_id from wf_processdefinition pd inner join wf_processnodemodel pn on pd.pn_id=pn.pn_id  where pn.pn_id=${pnId} and length(pn.id)=(select MAX(length(id)) from wf_processnodemodel where pn_id=${pnId})
+	</select>
+</mapper>

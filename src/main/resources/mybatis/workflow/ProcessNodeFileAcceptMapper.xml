@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessNodeFileAcceptDao">
+	<select id="getTotal" resultType="java.lang.Integer">
+		select count(*) from wf_processdefinition where 1=1
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+	</select>
+	<select id="query" resultType="java.util.HashMap">
+		select id,pid,code,url.sort,active, (select max(name) from
+		v_globalization_dictionary where mkey='ACCOUNTTYPE' and language=#{lang} and val=type) as
+		type_name,(select
+		max(name) from v_globalization_dictionary where mkey='LOGINTYPE' and language=#{lang} and
+		val=logintype) as
+		logintype_name,(select max(name) from
+		v_globalization_dictionary where mkey='ACTIVETYPE' and language=#{lang} and val=active) as
+		active_name
+		from
+		wf_processdefinition where 1=1
+		
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+		limit ${page.startR},${page.endR}
+	</select>
+	
+
+	<insert id="save" parameterType="ProcessNodeFileAccept" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO wf_processdefinition (pid, code, url,sort,active,createid,createtime)
+		VALUES
+		(#{pod}, #{code}, #{url},#{sort},#{active},${createid},sysdate())
+	</insert>
+
+	<update id="update" parameterType="ProcessNodeFileAccept">
+		UPDATE wf_processdefinition SET
+		pid = #{pid},
+		code=#{code},
+		url=#{url},
+		sort=#{sort},
+		active=#{active},
+		updateid=${updateid},
+		updatetime=sysdate()
+		WHERE id = #{id}
+	</update>
+
+	<delete id="delete">
+		delete from wf_processdefinition where id=${id}
+	</delete>
+	<select id="checkCode" resultType="java.lang.Integer">
+		select count(*) from wf_processdefinition
+		<where>
+			 code=#{code}
+		</where>
+	</select>
+</mapper>

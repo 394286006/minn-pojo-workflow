@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessNodeDao">
+	<select id="getTotal" resultType="java.lang.Integer">
+		select count(*) from wf_processnode where 1=1
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+	</select>
+	<select id="query" resultType="java.util.HashMap">
+		select id,pid,code,url.sort,active, (select max(name) from
+		v_globalization_dictionary where mkey='ACCOUNTTYPE' and language=#{lang} and val=type) as
+		type_name,(select
+		max(name) from v_globalization_dictionary where mkey='LOGINTYPE' and language=#{lang} and
+		val=logintype) as
+		logintype_name,(select max(name) from
+		v_globalization_dictionary where mkey='ACTIVETYPE' and language=#{lang} and val=active) as
+		active_name
+		from
+		wf_processnode where 1=1
+		
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+		limit ${page.startR},${page.endR}
+	</select>
+	
+
+	<insert id="save" parameterType="ProcessNode" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO wf_processnode (pid, code,sort,url,createid,createtime)
+		VALUES
+		(#{pId}, #{code},#{sort},#{url},${createid},sysdate())
+	</insert>
+
+	<update id="update" parameterType="ProcessNode">
+		UPDATE wf_processnode SET
+		pid = #{pId},
+		code=#{code},
+		sort=#{sort},
+		url=#{url},
+		updateid=${updateid},
+		updatetime=sysdate()
+		WHERE id = ${id}
+	</update>
+	
+   <select id="findEntityById" resultType="ProcessNode" >
+		select * from wf_processnode where id=${id}
+	</select>
+	
+	<delete id="delete">
+		delete from wf_processnode where id=${id}
+	</delete>
+	<select id="checkCode" resultType="java.lang.Integer">
+		select count(*) from wf_processnode
+		<where>
+			 code=#{code}
+		</where>
+	</select> 
+
+	<select id="queryTree" resultType="java.util.HashMap">
+		select t.id,t.pid as pid,t.url,t.code,sort,g.name as text,0 as selected,g.id as gid
+		from wf_processnode t inner join (select id,name,tableid from
+	    globalization where tablename='wf_processnode' and tablecolumn='name' and language=#{lang} ) as g on g.tableid=t.id 
+		 order by t.sort
+		
+	</select>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessAuditStatusDao">
+
+	<select id="query" resultType="java.util.HashMap">
+		select id,(select max(name) from account where id=audit_id) as auditName,date_format(auditdate,'%Y-%m-%d %H:%i:%s') as auditTime,comment,processstatus,(select max(name) from v_globalization_dictionary where mkey='WORKFLOWPASS'and val=status and language=#{lang} ) as statusName,step,maxactive,(select max(name) from globalization where tablename='department' and tablecolumn='name' and tableid=audit_deptid and language=#{lang}) as auditDept
+		from
+		wf_audit_status where processstatus=1 and  lp_id=${condition.lpId} and pdn_id like '${condition.pdId}%'
+
+	</select>
+	
+	<insert id="save" parameterType="ProcessAuditStatus" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO wf_audit_status (lp_id,pdn_id,processstatus,status,step,maxactive,comment)
+		VALUES
+		( #{lpId},#{pdnId},#{processStatus},#{status},#{step},#{maxActive},#{comment})
+
+	</insert>
+	
+	<select id="getMaxStep" resultType="java.lang.Integer">
+		select (ifnull(MAX(step),0)+${step}) from wf_audit_status where processstatus=1 and lp_id=${lpId} and pdn_id like '${pdId}%'
+	</select>
+	
+	<delete id="deleteByLpId">
+		delete from wf_audit_status where lp_id=${id}
+	</delete>
+	
+		<update id="update" parameterType="ProcessAuditStatus">
+		UPDATE wf_audit_status SET
+		processstatus =${processStatus},
+		audit_id=${auditId},
+		auditdate=#{auditdate},
+		status=${status},
+		audit_deptid=${auditDeptid},
+		comment=#{comment}
+		WHERE id = #{id}
+	</update>
+	
+    <update id="updateMaxActive" >
+       update wf_audit_status set maxactive=${maxActive} where (processstatus=-1 or status=1) and  lp_id=${lpId} and (pdn_id like concat(#{pdnId},'___%') or pdn_id not like concat(#{pdId},'%'))
+	</update>
+	
+	<select id="getMaxActive" resultType="java.lang.Integer">
+		select (ifnull(max(maxactive),1)+${step}) from wf_audit_status where (processstatus=-1 or status=1) and lp_id=${lpId} and pdn_id like '${pdId}%'
+	</select>
+	
+	<select id="getMaxAuditStatus" resultType="ProcessAuditStatus">
+		select pdn_id as pdnId,id,maxactive as maxActive from wf_audit_status where processstatus=-1 and lp_id=${lpId} and pdn_id like concat(#{pdId},'%','_',#{depId}) and step=(select max(step) from wf_audit_status where lp_id=${lpId} and pdn_id like concat(#{pdId},'%','_',#{depId})) and maxactive=(select max(maxactive) from wf_audit_status where lp_id=${lpId} and pdn_id like concat(#{pdId},'%','_',#{depId}))
+	</select>
+	
+	<select id="getFirstAuditStatus" resultType="ProcessAuditStatus">
+		select pdn_id as pdnId,id,maxactive as maxActive from wf_audit_status where  lp_id=${lpId} and pdn_id like concat(#{pdId},'%') and step=(select min(step) from wf_audit_status where lp_id=${lpId} and pdn_id like concat(#{pdId},'%'))
+	</select>
+	
+	<update id="updateProcessStatus">
+		UPDATE wf_audit_status SET
+		processstatus = ${processStatus}
+		WHERE lp_id = #{lpId} and pdn_id like '${pdId}%'
+	</update>
+	
+</mapper>

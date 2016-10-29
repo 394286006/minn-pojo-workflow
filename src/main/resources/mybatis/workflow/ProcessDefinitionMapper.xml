@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessDefinitionDao">
+	<select id="getTotal" resultType="java.lang.Integer">
+		select count(*) from wf_processdefinition where 1=1
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+	</select>
+	<select id="query" resultType="java.util.HashMap">
+		select id,pid,code,url,sort,active, (select max(name) from
+		v_globalization_dictionary where mkey='ACCOUNTTYPE' and language=#{lang} and val=type) as
+		type_name,(select
+		max(name) from v_globalization_dictionary where mkey='LOGINTYPE' and language=#{lang} and
+		val=logintype) as
+		logintype_name,(select max(name) from
+		v_globalization_dictionary where mkey='ACTIVETYPE' and language=#{lang} and val=active) as
+		active_name
+		from
+		wf_processdefinition where 1=1
+		
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+		limit ${page.startR},${page.endR}
+	</select>
+	
+
+	<insert id="save" parameterType="ProcessDefinition" >
+		INSERT INTO wf_processdefinition (id,pid, code,sort,active,pn_id,createid,createtime)
+		VALUES
+		(#{id},#{pId}, #{code},#{sort},#{active},#{pnId},${createid},sysdate())
+	</insert>
+
+	<update id="update" parameterType="ProcessDefinition">
+		UPDATE wf_processdefinition SET
+		pid = #{pId},
+		code=#{code},
+		sort=#{sort},
+		active=#{active},
+		updateid=${updateid},
+		updatetime=sysdate()
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getMaxId" resultType="java.lang.String" >
+		select ifnull(max(substring_index(id,'_',-1)),0)+1 from wf_processdefinition where pid=#{pid}
+	</select>
+	
+	<select id="findEntityById" resultType="ProcessDefinition" >
+		select * from wf_processdefinition where id=#{id}
+	</select>
+
+	<delete id="delete">
+		delete from wf_processdefinition where id=#{id}
+	</delete>
+	<select id="checkCode" resultType="java.lang.Integer">
+		select count(*) from wf_processdefinition
+		<where>
+			 code=#{code}
+		</where>
+	</select> 
+
+	<select id="queryTree" resultType="java.util.HashMap">
+	  select * from (
+		select t.id,t.pid ,t.active,t.code,t.sort,t.pn_id as pnId,g.name as text,0 as selected,g.id as gid
+		from wf_processdefinition t inner join (select id,name,tableid from
+	    globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} ) as g on g.tableid=t.id 
+		union all 
+		select id,-2 as pid,1 as active,'-1' as code,0 as sort,-2 as pnId,name as text,1 as selected,-2 as gid from globalization where tableid=12 and tablename='dictionary' and tablecolumn='name' and  language=#{lang}
+		) as ot order by ot.sort
+		
+	</select>
+	
+	<select id="findByPId" resultType="java.util.HashMap" >
+		select id,pid, pn_id as pnId,(select max(name) from
+	    globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} and tableid=wf_processdefinition.id) as name from wf_processdefinition where pid=#{pid} and sort=(select min(sort) from wf_processdefinition where pid=#{pid})
+	</select>
+	
+</mapper>

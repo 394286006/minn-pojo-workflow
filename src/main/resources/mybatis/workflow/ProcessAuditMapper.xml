@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessAuditDao">
+
+	<select id="query" resultType="java.util.HashMap">
+		select id,fromnode,tonode,status,lp_id,pd_id,pas_id,maxactive
+		from
+		wf_saudit where 1=1
+		
+		<if test="condition.active!='unknown'">
+		  and active=${condition.active}
+		</if>
+	
+	</select>
+	
+
+	<insert id="save" parameterType="ProcessAudit" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO wf_audit (fromnode, tonode, status,lp_id,pd_id,pas_id,maxactive,createid,createtime)
+		VALUES
+		(#{fromnode}, #{tonode}, #{status},#{lpId},#{pdId},${pasId},${maxActive},${createid},#{createtime})
+	</insert>
+	<delete id="deleteByLpId">
+		delete from wf_audit where lp_id=${id}
+	</delete>
+	
+	<select id="getMaxActive" resultType="java.lang.Integer">
+		select (ifnull(max(maxactive),-1)+1) from wf_audit where lp_id=${lpId} and pd_id=${pdId}
+	</select>
+
+</mapper>
