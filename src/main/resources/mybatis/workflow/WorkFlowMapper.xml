@@ -5,13 +5,13 @@
 <mapper namespace="p.minn.workflow.repository.WorkFlowDao">
 	
 	<select id="queryTree" resultType="java.util.HashMap">
-	  select id as id,id as rid,(select max(name) from globalization where tablename='department' and tablecolumn='name' and tableid=department.id) as text , pid,pid as rpid,0 as selected,'department' as type from department
+	  select id as id,id as rid,(select max(name) from globalization where tablename='department' and tablecolumn='name' and tableid=department.id) as text , pid,pid as rpid,0 as selected,'department' as type,code,id as sort from department
 		
 	</select>
 	
 	<select id="queryModelTree" resultType="java.util.HashMap">
-	select pd.id,pd.pid,pd.pn_id as pnId,(select max(name) from globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} and tableid=pd.id) as text,(select max(url) from wf_processnode where id=pn_id) as url ,(case pd.sort when 1 then 1 else 0 end) as selected from wf_processdefinition  pd where pd.id 
-	like '${condition.id}%'  order by pd.sort asc
+	select pd.id,pd.pid,pd.pn_id as pnId,(select max(name) from globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} and tableid=pd.id) as text,(select max(url) from wf_processnode where id=pn_id) as url ,(case pd.sort when 1 then 1 else 0 end) as selected from wf_processdefinition  pd where pd.pid 
+	like '${condition.id}'  order by pd.sort asc
 	</select>
 	<!-- 
 	<select id="getNextStep" resultType="java.util.HashMap">
@@ -20,20 +20,68 @@
 	</select>
 	 -->
 	<select id="getNextStep" resultType="java.util.HashMap">
-	 select ${fun}(concat(pd.pid,'_',pn.id)) as pdnId,pd.pn_id,pd.id as pdId from wf_processdefinition pd inner join wf_processnodemodel pn on pd.pn_id=pn.pn_id  where 
-    concat(pd.pid,'_',pn.id) not in (select pdn_id from wf_audit_status where lp_id=${lpId} and status=1 and maxactive=${maxActive})
-	and pd.sort=(
-	 select min(pd.sort) from wf_processdefinition pd inner join wf_processnodemodel pn on pd.pn_id=pn.pn_id  where 
-	 concat(pd.pid,'_',pn.id) not in (select pdn_id from wf_audit_status where lp_id=${lpId} and status=1 and maxactive=${maxActive})
+	 select pd.id as pdId,pd.pn_id from wf_processdefinition pd   where pd.pid like '${pdId}%' and 
+    pd.id not in (select pd_id from v_wf_audit_status where lp_id=${lpId} and status=1 and maxactive=${maxActive})
+	and length(pd.id)=(
+	 select max(length(pd.id)) from wf_processdefinition pd  where pd.pid like '${pdId}%' and 
+	 pd.id not in (select pd_id from v_wf_audit_status where lp_id=${lpId} and status=1 and maxactive=${maxActive})
 	)
 	</select>
 	
-	<select id="getNodeCompleteNum" resultType="java.lang.Integer">
-	 select (
-		select  count(id) num from wf_processnodemodel where pn_id=${pnId}) -
-		(select count(id) num from wf_audit_status where  lp_id=${lpId} and pdn_id like '${pdId}%' and maxactive=(select max(maxactive) from wf_audit_status where lp_id=${lpId} and pdn_id like '${pdId}%')
-		) as num
+	<select id="getNextNodeStep" resultType="java.util.HashMap">
+	 select pd.id as pdId,pd.pn_id from wf_processdefinition pd   where pd.pid like '${pdId}%' and 
+    pd.id not in (select pd_id from v_wf_audit_status where lp_id=${lpId} and (status=1 or id=${pasId}) and maxactive=${maxActive})
+	and length(pd.id)=(
+	 select max(length(pd.id)) from wf_processdefinition pd  where pd.pid like '${pdId}%' and 
+	 pd.id not in (select pd_id from v_wf_audit_status where lp_id=${lpId} and (status=1 or id=${pasId}) and maxactive=${maxActive})
+	)
 	</select>
 	
 	
+	<select id="getNextNode" resultType="java.util.HashMap">
+	 select id as pdId from wf_processdefinition where pid=#{pId} and id not in(select tonode from v_wf_audit_status where lp_id=${lpId} and processstatus=1 and status=1 and maxactive=${maxActive})
+and sort=(select min(sort) from wf_processdefinition where pid=#{pId} and id not in(select tonode from v_wf_audit_status where lp_id=${lpId} and processstatus=1 and status=1 and maxactive=${maxActive}))
+	</select>
+	
+	<select id="getNodeCompleteStatus" resultType="java.lang.Integer">
+	select case t.num2 when 0 then 0 else t.num1-t.num2 end as num from ( 
+	select     
+(select count(*) from wf_processdefinition where id like '${pdId}_%') as num1,
+(select count(distinct fromnode) from v_wf_audit_status where lp_id=${lpId} and fromnode like '${pdId}_%'  and processstatus=1 and status=1 and maxactive=(select max(maxactive) from v_wf_audit_status where lp_id=${lpId} and fromnode like '${pdId}_%'))
+ as num2
+	) t	
+	</select>
+	
+	<select id="getNodeStepCompleteStatus" resultType="java.lang.Integer">
+	 
+		select count(*) from wf_processdefinition where pid=(select max(tonode) from v_wf_audit_status where id=${pasId}) and id not in(
+select fromnode from v_wf_audit_status where lp_id=${lpId} and (status=1 or id=${pasId}) and maxactive=${maxActive} and step=#{step} and tonode=(select max(tonode) from v_wf_audit_status where id=${pasId} ) 
+) 
+		
+	</select>
+	
+		<select id="getPreNodeStep" resultType="java.util.HashMap">
+		 select id as pdId from wf_processdefinition where pid in(
+	   select id  from wf_processdefinition where pid=(select tonode from v_wf_audit_status where lp_id=${lpId} and id=${pasId} and status=0))
+	</select>
+	
+		<select id="getPreNodeCompleteStatus" resultType="java.lang.Integer">
+	select case t.num2 when 0 then 0  else t.num1-t.num2 end as num from ( 
+		select     
+	(select count(*) from wf_processdefinition where id like '${pdId}_%') as num1,
+	(select count(distinct fromnode) from v_wf_audit_status where lp_id=${lpId} and fromnode like '${pdId}_%' and tonode not in(select tonode from v_wf_audit_status where id=${pasId}) and processstatus=1 and status=1 and maxactive=(select max(maxactive) from v_wf_audit_status where lp_id=${lpId} and fromnode like '${pdId}_%'))
+	 as num2
+	) t	
+	</select>
+	
+		<select id="getPreNode" resultType="java.util.HashMap">
+		<![CDATA[
+		select id as pdId from wf_processdefinition where pid=(
+		 select id as pdId from wf_processdefinition where pid=#{pId} and sort=(
+		    select max(sort) from wf_processdefinition where pid=#{pId} and sort< (select sort from wf_processdefinition where id=#{pdId})
+		  )
+		  )
+		  	]]>
+	</select>
+
 </mapper>

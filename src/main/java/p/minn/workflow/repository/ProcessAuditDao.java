@@ -26,4 +26,5 @@ public interface ProcessAuditDao extends BaseDao<ProcessAudit,IdEntity>{
   
   Integer getMaxActive(@Param("lpId") String lpId,@Param("pdId") String pdId);
 
+
 }

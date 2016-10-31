@@ -27,9 +27,11 @@ public class ProcessAuditStatus extends IdEntity{
 	
 	private String step;
 	
-	private String pdnId;
+	private String pdId;
 	
 	private Integer processStatus;
+	
+	private Integer nodeStatus;
 	
 	private Integer status;
 	
@@ -132,12 +134,20 @@ public class ProcessAuditStatus extends IdEntity{
     this.comment = comment;
   }
 
-  public String getPdnId() {
-    return pdnId;
+  public String getPdId() {
+    return pdId;
   }
 
-  public void setPdnId(String pdnId) {
-    this.pdnId = pdnId;
+  public void setPdId(String pdId) {
+    this.pdId = pdId;
+  }
+
+  public Integer getNodeStatus() {
+    return nodeStatus;
+  }
+
+  public void setNodeStatus(Integer nodeStatus) {
+    this.nodeStatus = nodeStatus;
   }
 
 	

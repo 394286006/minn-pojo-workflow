@@ -7,20 +7,20 @@
 	<select id="query" resultType="java.util.HashMap">
 		select id,(select max(name) from account where id=audit_id) as auditName,date_format(auditdate,'%Y-%m-%d %H:%i:%s') as auditTime,comment,processstatus,(select max(name) from v_globalization_dictionary where mkey='WORKFLOWPASS'and val=status and language=#{lang} ) as statusName,step,maxactive,(select max(name) from globalization where tablename='department' and tablecolumn='name' and tableid=audit_deptid and language=#{lang}) as auditDept
 		from
-		wf_audit_status where processstatus=1 and  lp_id=${condition.lpId} and pdn_id like '${condition.pdId}%'
+		wf_audit_status where processstatus=1 and  lp_id=${condition.lpId} and pd_id like '${condition.pdId}%'
 
 	</select>
 	
 	<insert id="save" parameterType="ProcessAuditStatus" useGeneratedKeys="true"
 		keyProperty="id">
-		INSERT INTO wf_audit_status (lp_id,pdn_id,processstatus,status,step,maxactive,comment)
+		INSERT INTO wf_audit_status (lp_id,pd_id,processstatus,status,step,maxactive,comment,nodestatus)
 		VALUES
-		( #{lpId},#{pdnId},#{processStatus},#{status},#{step},#{maxActive},#{comment})
+		( #{lpId},#{pdId},#{processStatus},#{status},#{step},#{maxActive},#{comment},${nodeStatus})
 
 	</insert>
 	
 	<select id="getMaxStep" resultType="java.lang.Integer">
-		select (ifnull(MAX(step),0)+${step}) from wf_audit_status where processstatus=1 and lp_id=${lpId} and pdn_id like '${pdId}%'
+		select (ifnull(MAX(step),0)+${step}) from wf_audit_status where processstatus=1 and lp_id=${lpId} and pd_id like '${pdId}%'
 	</select>
 	
 	<delete id="deleteByLpId">
@@ -38,26 +38,37 @@
 		WHERE id = #{id}
 	</update>
 	
+	<select id="getNeedUpdateMaxActive" resultType="java.lang.Integer">
+		select distinct id from v_wf_audit_status where lp_id=${lpId} and length(pd_id)!=(select length(max(pd_id)) from v_wf_audit_status where lp_id=${lpId} and status=0) and ( pd_id like concat(#{pdId},'___%') or pd_id not like concat(#{pdId},'%'))
+	</select>
+	<select id="getNoNeedUpdateMaxActive" resultType="java.lang.Integer">
+		select distinct id from v_wf_audit_status oas where oas.lp_id=${lpId} and (exists  (select * from v_wf_audit_status ias where ias.lp_id=${lpId} and ias.status=0 and ias.tonode=oas.tonode and ias.step=oas.step ) or oas.id in (select id from v_wf_audit_status where status=1 and tonode in(select tonode from v_wf_audit_status where id= ${pasId}) ))
+	</select>
+	
     <update id="updateMaxActive" >
-       update wf_audit_status set maxactive=${maxActive} where (processstatus=-1 or status=1) and  lp_id=${lpId} and (pdn_id like concat(#{pdnId},'___%') or pdn_id not like concat(#{pdId},'%'))
+       update wf_audit_status set maxactive=${maxActive} where (processstatus=-1 or status=1) and  lp_id=${lpId} and id not in (${ids})
 	</update>
 	
 	<select id="getMaxActive" resultType="java.lang.Integer">
-		select (ifnull(max(maxactive),1)+${step}) from wf_audit_status where (processstatus=-1 or status=1) and lp_id=${lpId} and pdn_id like '${pdId}%'
+		select (ifnull(max(maxactive),1)+${step}) from wf_audit_status where (processstatus=-1 or status=1) and lp_id=${lpId} and pd_id like '${pdId}%'
 	</select>
 	
 	<select id="getMaxAuditStatus" resultType="ProcessAuditStatus">
-		select pdn_id as pdnId,id,maxactive as maxActive from wf_audit_status where processstatus=-1 and lp_id=${lpId} and pdn_id like concat(#{pdId},'%','_',#{depId}) and step=(select max(step) from wf_audit_status where lp_id=${lpId} and pdn_id like concat(#{pdId},'%','_',#{depId})) and maxactive=(select max(maxactive) from wf_audit_status where lp_id=${lpId} and pdn_id like concat(#{pdId},'%','_',#{depId}))
+		select pd_id as pdId,id,maxactive as maxActive,step from wf_audit_status where processstatus=-1 and lp_id=${lpId} and exists(select * from wf_audit a where a.pas_id=wf_audit_status.id and a.pd_id like concat(#{pdId},'%','_',#{depId}))  and step=(select max(step) from wf_audit_status where lp_id=${lpId} and  pd_id like concat(#{pdId},'%')) and maxactive=(select max(maxactive) from wf_audit_status where lp_id=${lpId} and pd_id like concat(#{pdId},'%'))
 	</select>
 	
 	<select id="getFirstAuditStatus" resultType="ProcessAuditStatus">
-		select pdn_id as pdnId,id,maxactive as maxActive from wf_audit_status where  lp_id=${lpId} and pdn_id like concat(#{pdId},'%') and step=(select min(step) from wf_audit_status where lp_id=${lpId} and pdn_id like concat(#{pdId},'%'))
+		select pd_id as pdId,id,maxactive as maxActive from wf_audit_status where  lp_id=${lpId} and pd_id like concat(#{pdId},'%') and step=(select min(step) from wf_audit_status where lp_id=${lpId} and pd_id like concat(#{pdId},'%'))
 	</select>
 	
 	<update id="updateProcessStatus">
 		UPDATE wf_audit_status SET
 		processstatus = ${processStatus}
-		WHERE lp_id = #{lpId} and pdn_id like '${pdId}%'
+		WHERE lp_id = #{lpId} and pd_id like '${pdId}%'
 	</update>
-	
+		<update id="updateMaxActiveBypdId" >
+		UPDATE wf_audit_status SET
+		maxactive =${maxActive}
+		WHERE id = (select pas_id from wf_audit where pd_id = #{pdId})
+	</update>
 </mapper>

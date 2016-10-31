@@ -49,7 +49,7 @@
 	</update>
 
     <select id="findEntityById" resultType="LeaveProcess">
-		select * from wf_leaveprocess where id=${id}
+		select id,pd_id as pdId,maxactive as maxActive,status from wf_leaveprocess where id=${id}
 	</select>
 	
 	<delete id="delete">

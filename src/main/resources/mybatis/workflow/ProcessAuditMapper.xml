@@ -18,9 +18,9 @@
 
 	<insert id="save" parameterType="ProcessAudit" useGeneratedKeys="true"
 		keyProperty="id">
-		INSERT INTO wf_audit (fromnode, tonode, status,lp_id,pd_id,pas_id,maxactive,createid,createtime)
+		INSERT INTO wf_audit (fromnode, tonode, status,lp_id,pd_id,pas_id,createid,createtime)
 		VALUES
-		(#{fromnode}, #{tonode}, #{status},#{lpId},#{pdId},${pasId},${maxActive},${createid},#{createtime})
+		(#{fromnode}, #{tonode}, #{status},#{lpId},#{pdId},${pasId},${createid},#{createtime})
 	</insert>
 	<delete id="deleteByLpId">
 		delete from wf_audit where lp_id=${id}
@@ -29,5 +29,5 @@
 	<select id="getMaxActive" resultType="java.lang.Integer">
 		select (ifnull(max(maxactive),-1)+1) from wf_audit where lp_id=${lpId} and pd_id=${pdId}
 	</select>
-
+	
 </mapper>

@@ -78,5 +78,7 @@
 		select id,pid, pn_id as pnId,(select max(name) from
 	    globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} and tableid=wf_processdefinition.id) as name from wf_processdefinition where pid=#{pid} and sort=(select min(sort) from wf_processdefinition where pid=#{pid})
 	</select>
-	
+	<select id="getPreNodes" resultType="ProcessDefinition">
+		select * from wf_processdefinition where id like '${pId}%' and length(id)=(select length(max(fromnode)) from v_wf_audit_status where id=${pasId});
+	</select>
 </mapper>
