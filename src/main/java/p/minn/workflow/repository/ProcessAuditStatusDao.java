@@ -39,6 +39,6 @@ public interface ProcessAuditStatusDao extends BaseDao<ProcessAuditStatus,IdEnti
   
   List<Integer> getNoNeedUpdateMaxActive(@Param("lpId")String lpId, @Param("pdId")String pdId, @Param("pasId")Integer pasId);
   
-  void updateMaxActiveBypdId(@Param("pdId") String pdId,@Param("maxActive") Integer maxActive);
+  void updateMaxActiveById(@Param("lpId")String lpId,@Param("pdId") String pdId,@Param("maxActive") Integer maxActive);
   
 }

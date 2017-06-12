@@ -66,9 +66,9 @@
 		processstatus = ${processStatus}
 		WHERE lp_id = #{lpId} and pd_id like '${pdId}%'
 	</update>
-		<update id="updateMaxActiveBypdId" >
+		<update id="updateMaxActiveById" >
 		UPDATE wf_audit_status SET
 		maxactive =${maxActive}
-		WHERE id = (select pas_id from wf_audit where pd_id = #{pdId})
+		WHERE id = (select pas_id from wf_audit where lp_id=${lpId} and pd_id = #{pdId})
 	</update>
 </mapper>
