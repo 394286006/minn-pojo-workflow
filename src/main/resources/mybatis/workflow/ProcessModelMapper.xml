@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="p.minn.workflow.repository.ProcessModelDao">
+    <resultMap type="p.minn.workflow.entity.ProcessModel" id="myProcessModel">
+    <result column="model" property="model" typeHandler="p.minn.workflow.typeHandler.MyBlobTypeHandler"/>
+	</resultMap>
+	<insert id="saveModel" parameterType="ProcessModel" 
+		keyProperty="id">
+		INSERT INTO wf_processmodel (processid,model)
+		VALUES
+		(#{processid},#{model,jdbcType=BLOB})
+	</insert>	
+	
+	<delete id="deleteByProcessId">
+		delete from wf_processmodel where processid=${processid}
+	</delete>
+	
+	<update id="updateModel" parameterType="ProcessModel">
+	   update wf_processmodel set model=#{model,jdbcType=BLOB} where processid=#{processid}
+	</update>
+
+	
+	<select id="getModelByProcessId" resultMap="myProcessModel">
+		select processid,model from wf_processmodel where processid=#{processId}
+	</select>
+</mapper>

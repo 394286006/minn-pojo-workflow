@@ -32,6 +32,8 @@ public interface ProcessDefinitionDao extends BaseDao<ProcessDefinition,IdEntity
   public ProcessDefinition findEntityById(String id);
 
   public void delete(@Param("id")String id);
+  
+  public void deleteByProcessId(@Param("processId")String processId);
 
   public List<ProcessDefinition> getPreNodes(@Param("pId")String pId, @Param("pasId")Integer pasId);
   

@@ -56,6 +56,11 @@
 	<delete id="delete">
 		delete from wf_processdefinition where id=#{id}
 	</delete>
+	
+	<delete id="deleteByProcessId">
+		delete from wf_processdefinition where id like concat(#{processId},'_%') 
+	</delete>
+	
 	<select id="checkCode" resultType="java.lang.Integer">
 		select count(*) from wf_processdefinition
 		<where>
