@@ -14,7 +14,7 @@
 	</insert>	
 	
 	<delete id="deleteByProcessId">
-		delete from wf_processmodel where processid=${processid}
+		delete from wf_processmodel where processid=#{processId}
 	</delete>
 	
 	<update id="updateModel" parameterType="ProcessModel">

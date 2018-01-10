@@ -58,7 +58,7 @@
 	</delete>
 	
 	<delete id="deleteByProcessId">
-		delete from wf_processdefinition where id like concat(#{processId},'_%') 
+		delete from wf_processdefinition where id!=#{processId} and id like concat(#{processId},'_%') 
 	</delete>
 	
 	<select id="checkCode" resultType="java.lang.Integer">
@@ -75,7 +75,13 @@
 	    globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} ) as g on g.tableid=t.id 
 		union all 
 		select id,-2 as pid,1 as active,'-1' as code,0 as sort,-2 as pnId,name as text,1 as selected,-2 as gid from globalization where tableid=12 and tablename='dictionary' and tablecolumn='name' and  language=#{lang}
-		) as ot order by ot.sort
+		union all 
+		select pd.id as id,pd.pid,pd.active,pd.code,pd.sort,pd.pn_id as pnId,t.name as text,0 as selected,t.val as gid from v_globalization_dictionary t inner join  wf_processdefinition pd on t.tableid=REVERSE(SUBSTRING_INDEX(REVERSE(pd.id),'_',1))
+		where t.tablename='department' and pd.code like 'D%' and t.language=#{lang}
+		union all 
+select pd.id as id,pd.pid,ifnull(pn.active,1) as active,pn.code,pd.sort,pn.id as pnId,t.name as text,0 as selected,t.id as gid from globalization t inner join  wf_processnode pn on t.tableid=pn.id inner join wf_processdefinition pd on pn.code=pd.code
+where t.tablename='wf_processnode' and t.tablecolumn='name' and t.language=#{lang}		
+) as ot order by ot.sort
 		
 	</select>
 	
