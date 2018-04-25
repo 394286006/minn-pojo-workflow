@@ -5,13 +5,9 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import p.minn.common.annotation.LogAnnotation;
-import p.minn.privilege.entity.IdEntity;
-import p.minn.privilege.entity.Account;
-import p.minn.privilege.entity.AccountRole;
-import p.minn.privilege.repository.BaseDao;
+import p.minn.common.baseDao.BaseDao;
+import p.minn.common.entity.IdEntity;
 import p.minn.workflow.entity.ProcessAuditStatus;
-import p.minn.workflow.entity.ProcessDefinition;
 
 /**
  * 

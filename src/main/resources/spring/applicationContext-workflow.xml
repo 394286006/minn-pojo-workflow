@@ -15,8 +15,8 @@
 	<!-- author minn -->
  
   <context:property-placeholder ignore-unresolvable="true" location="classpath*:/spring/application.workflow.properties" />
-  <context:component-scan base-package="p.minn.workflow.service"/>
-  
+  <context:component-scan base-package="p.minn.workflow.service,p.minn.aop.log,p.minn.oauth,p.minn.config,p.minn.security.service"/>
+
   <bean id="workflowdataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> 
 		<property name="driverClassName" value="${jdbc.workflow.driver}"/> 
 		<property name="url" value="${jdbc.workflow.url}"/> 
@@ -33,22 +33,27 @@
 	<!-- define the SqlSessionFactory -->
 	<bean id="workflowSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="workflowdataSource" />
-		<property name="typeAliasesPackage" value="p.minn.workflow.entity" />
-		<property name="mapperLocations" value="classpath:/mybatis/workflow/*Mapper.xml" />
-		
+		<property name="typeAliasesPackage" value="p.minn.workflow.entity;p.minn.common.entity;p.minn.auth.entity" />
+				<property name="mapperLocations" >
+		   <list>
+		       <value>classpath:/mybatis/workflow/*Mapper.xml</value>
+		       <value>classpath:/mybatis/common/*Mapper.xml</value>
+		       <value>classpath:/mybatis/auth/*Mapper.xml</value>
+		   </list>
+		</property>
 	</bean>
 
 
 	<!-- scan for mappers and let them be autowired -->
 	<bean id="workflowmapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="p.minn.workflow.repository" />
+		<property name="basePackage" value="p.minn.workflow.repository,p.minn.common.repository,p.minn.auth.repository" />
 		<property name="sqlSessionFactoryBeanName" value="workflowSessionFactory"/>
 	</bean>
-	<!--  -->
+	<!--  
     <aop:config>
        <aop:pointcut expression="execution(public * p.minn..*.*(..))" id="crudlog"/>
        <aop:advisor advice-ref="logTableAop" pointcut-ref="crudlog"/>
     </aop:config>
-    
+    -->
  
 </beans>

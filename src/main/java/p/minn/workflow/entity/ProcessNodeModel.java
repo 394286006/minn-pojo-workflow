@@ -2,8 +2,7 @@ package p.minn.workflow.entity;
 
 import java.io.Serializable;
 
-
-import p.minn.privilege.entity.IdEntity;
+import p.minn.common.entity.IdEntity;
 
 
 /**

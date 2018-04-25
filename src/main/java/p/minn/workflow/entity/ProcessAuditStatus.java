@@ -2,7 +2,7 @@ package p.minn.workflow.entity;
 
 import java.util.Set;
 
-import p.minn.privilege.entity.IdEntity;
+import p.minn.common.entity.IdEntity;
 
 /**
  * 

@@ -1,6 +1,6 @@
 package p.minn.workflow.entity;
 
-import p.minn.privilege.entity.IdEntity;
+import p.minn.common.entity.IdEntity;
 
 
 /**
