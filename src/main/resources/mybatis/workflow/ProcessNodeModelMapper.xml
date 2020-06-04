@@ -4,7 +4,7 @@
 
 <mapper namespace="p.minn.workflow.repository.ProcessNodeModelDao">
 
-	<insert id="save" parameterType="ProcessNodeModel" 
+	<insert id="save" parameterType="p.minn.workflow.entity.ProcessNodeModel" 
 		keyProperty="id">
 		INSERT INTO wf_processnodemodel (id,pid,pn_id,type,deptid)
 		VALUES

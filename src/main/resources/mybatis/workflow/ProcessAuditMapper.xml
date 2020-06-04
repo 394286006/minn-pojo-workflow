@@ -16,7 +16,7 @@
 	</select>
 	
 
-	<insert id="save" parameterType="ProcessAudit" useGeneratedKeys="true"
+	<insert id="save" parameterType="p.minn.workflow.entity.ProcessAudit" useGeneratedKeys="true"
 		keyProperty="id">
 		INSERT INTO wf_audit (fromnode, tonode, status,lp_id,pd_id,pas_id,createid,createtime)
 		VALUES

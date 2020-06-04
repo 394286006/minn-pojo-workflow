@@ -28,13 +28,13 @@
 	</select>
 	
 
-	<insert id="save" parameterType="ProcessDefinition" >
+	<insert id="save" parameterType="p.minn.workflow.entity.ProcessDefinition" >
 		INSERT INTO wf_processdefinition (id,pid, code,sort,active,pn_id,createid,createtime)
 		VALUES
 		(#{id},#{pId}, #{code},#{sort},#{active},#{pnId},${createid},sysdate())
 	</insert>
 
-	<update id="update" parameterType="ProcessDefinition">
+	<update id="update" parameterType="p.minn.workflow.entity.ProcessDefinition">
 		UPDATE wf_processdefinition SET
 		pid = #{pId},
 		code=#{code},
@@ -49,7 +49,7 @@
 		select ifnull(max(substring_index(id,'_',-1)),0)+1 from wf_processdefinition where pid=#{pid}
 	</select>
 	
-	<select id="findEntityById" resultType="ProcessDefinition" >
+	<select id="findEntityById" resultType="p.minn.workflow.entity.ProcessDefinition" >
 		select * from wf_processdefinition where id=#{id}
 	</select>
 
@@ -89,7 +89,7 @@ where t.tablename='wf_processnode' and t.tablecolumn='name' and t.language=#{lan
 		select id,pid, pn_id as pnId,(select max(name) from
 	    globalization where tablename='wf_processdefinition' and tablecolumn='name' and language=#{lang} and tableid=wf_processdefinition.id) as name from wf_processdefinition where pid=#{pid} and sort=(select min(sort) from wf_processdefinition where pid=#{pid})
 	</select>
-	<select id="getPreNodes" resultType="ProcessDefinition">
+	<select id="getPreNodes" resultType="p.minn.workflow.entity.ProcessDefinition">
 		select * from wf_processdefinition where id like '${pId}%' and length(id)=(select length(max(fromnode)) from v_wf_audit_status where id=${pasId});
 	</select>
 </mapper>

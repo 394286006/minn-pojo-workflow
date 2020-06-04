@@ -6,7 +6,7 @@
     <resultMap type="p.minn.workflow.entity.ProcessModel" id="myProcessModel">
     <result column="model" property="model" typeHandler="p.minn.workflow.typeHandler.MyBlobTypeHandler"/>
 	</resultMap>
-	<insert id="saveModel" parameterType="ProcessModel" 
+	<insert id="saveModel" parameterType="p.minn.workflow.entity.ProcessModel" 
 		keyProperty="id">
 		INSERT INTO wf_processmodel (processid,model)
 		VALUES
@@ -17,7 +17,7 @@
 		delete from wf_processmodel where processid=#{processId}
 	</delete>
 	
-	<update id="updateModel" parameterType="ProcessModel">
+	<update id="updateModel" parameterType="p.minn.workflow.entity.ProcessModel">
 	   update wf_processmodel set model=#{model,jdbcType=BLOB} where processid=#{processid}
 	</update>
 

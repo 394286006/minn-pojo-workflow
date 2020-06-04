@@ -28,14 +28,14 @@
 	</select>
 	
 
-	<insert id="save" parameterType="ProcessNode" useGeneratedKeys="true"
+	<insert id="save" parameterType="p.minn.workflow.entity.ProcessNode" useGeneratedKeys="true"
 		keyProperty="id">
 		INSERT INTO wf_processnode (pid, code,sort,url,createid,createtime)
 		VALUES
 		(#{pId}, #{code},#{sort},#{url},${createid},sysdate())
 	</insert>
 
-	<update id="update" parameterType="ProcessNode">
+	<update id="update" parameterType="p.minn.workflow.entity.ProcessNode">
 		UPDATE wf_processnode SET
 		pid = #{pId},
 		code=#{code},
@@ -46,7 +46,7 @@
 		WHERE id = ${id}
 	</update>
 	
-   <select id="findEntityById" resultType="ProcessNode" >
+   <select id="findEntityById" resultType="p.minn.workflow.entity.ProcessNode" >
 		select * from wf_processnode where id=${id}
 	</select>
 	

@@ -26,14 +26,14 @@
 	</select>
 	
 
-	<insert id="save" parameterType="LeaveProcess" useGeneratedKeys="true"
+	<insert id="save" parameterType="p.minn.workflow.entity.LeaveProcess" useGeneratedKeys="true"
 		keyProperty="id">
 		INSERT INTO wf_leaveprocess (pd_id, maxactive,status,starttime,endtime,request_id,createid,createtime)
 		VALUES
 		(#{pdId}, #{maxActive}, #{status}, #{startTime}, #{endTime}, #{requestId},${createid},sysdate())
 	</insert>
 
-	<update id="update" parameterType="LeaveProcess">
+	<update id="update" parameterType="p.minn.workflow.entity.LeaveProcess">
 		UPDATE wf_leaveprocess SET
 		maxactive = ${maxActive}
 		<if test="startTime!=null">
@@ -48,7 +48,7 @@
 		WHERE id = ${id}
 	</update>
 
-    <select id="findEntityById" resultType="LeaveProcess">
+    <select id="findEntityById" resultType="p.minn.workflow.entity.LeaveProcess">
 		select id,pd_id as pdId,maxactive as maxActive,status from wf_leaveprocess where id=${id}
 	</select>
 	

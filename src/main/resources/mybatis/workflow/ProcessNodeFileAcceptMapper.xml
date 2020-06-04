@@ -28,14 +28,14 @@
 	</select>
 	
 
-	<insert id="save" parameterType="ProcessNodeFileAccept" useGeneratedKeys="true"
+	<insert id="save" parameterType="p.minn.workflow.entity.ProcessNodeFileAccept" useGeneratedKeys="true"
 		keyProperty="id">
 		INSERT INTO wf_processdefinition (pid, code, url,sort,active,createid,createtime)
 		VALUES
 		(#{pod}, #{code}, #{url},#{sort},#{active},${createid},sysdate())
 	</insert>
 
-	<update id="update" parameterType="ProcessNodeFileAccept">
+	<update id="update" parameterType="p.minn.workflow.entity.ProcessNodeFileAccept">
 		UPDATE wf_processdefinition SET
 		pid = #{pid},
 		code=#{code},

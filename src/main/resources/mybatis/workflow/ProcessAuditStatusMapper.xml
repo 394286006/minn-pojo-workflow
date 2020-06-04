@@ -11,7 +11,7 @@
 
 	</select>
 	
-	<insert id="save" parameterType="ProcessAuditStatus" useGeneratedKeys="true"
+	<insert id="save" parameterType="p.minn.workflow.entity.ProcessAuditStatus" useGeneratedKeys="true"
 		keyProperty="id">
 		INSERT INTO wf_audit_status (lp_id,pd_id,processstatus,status,step,maxactive,comment,nodestatus)
 		VALUES
@@ -27,7 +27,7 @@
 		delete from wf_audit_status where lp_id=${id}
 	</delete>
 	
-		<update id="update" parameterType="ProcessAuditStatus">
+		<update id="update" parameterType="p.minn.workflow.entity.ProcessAuditStatus">
 		UPDATE wf_audit_status SET
 		processstatus =${processStatus},
 		audit_id=${auditId},
@@ -53,11 +53,11 @@
 		select (ifnull(max(maxactive),1)+${step}) from wf_audit_status where (processstatus=-1 or status=1) and lp_id=${lpId} and pd_id like '${pdId}%'
 	</select>
 	
-	<select id="getMaxAuditStatus" resultType="ProcessAuditStatus">
+	<select id="getMaxAuditStatus" resultType="p.minn.workflow.entity.ProcessAuditStatus">
 		select pd_id as pdId,id,maxactive as maxActive,step from wf_audit_status where processstatus=-1 and lp_id=${lpId} and exists(select * from wf_audit a where a.pas_id=wf_audit_status.id and a.pd_id like concat(#{pdId},'%','_',#{depId}))  and step=(select max(step) from wf_audit_status where lp_id=${lpId} and  pd_id like concat(#{pdId},'%')) and maxactive=(select max(maxactive) from wf_audit_status where lp_id=${lpId} and pd_id like concat(#{pdId},'%'))
 	</select>
 	
-	<select id="getFirstAuditStatus" resultType="ProcessAuditStatus">
+	<select id="getFirstAuditStatus" resultType="p.minn.workflow.entity.ProcessAuditStatus">
 		select pd_id as pdId,id,maxactive as maxActive from wf_audit_status where  lp_id=${lpId} and pd_id like concat(#{pdId},'%') and step=(select min(step) from wf_audit_status where lp_id=${lpId} and pd_id like concat(#{pdId},'%'))
 	</select>
 	
